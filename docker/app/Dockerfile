@@ -1,36 +1,42 @@
-FROM php:8.3-fpm
+FROM php:8.3-fpm as app
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
+    --no-install-recommends \
     curl \
+    zip \
+    unzip \
+    pkg-config \
     libpng-dev \
     libonig-dev \
     libxml2-dev \
-    zip \
-    unzip \
     libzip-dev \
     libcurl4-openssl-dev \
-    pkg-config \
     libssl-dev \
     libpq-dev \
     libfreetype6-dev \
     libjpeg-dev \
-    libpng-dev \
-    libwebp-dev \
-    --no-install-recommends \
+    libwebp-dev
+
+RUN  set -eux; \
     #### if you need GD library, uncomment the following line
-    # && pecl install imagick \
+    # pecl install imagick \
     # && docker-php-ext-enable imagick \
     # && docker-php-ext-install pdo mbstring exif pcntl bcmath zip curl mysqli pdo_mysql 
     #### If you need imageMagick, uncomment the following lines
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install pdo_mysql -j$(nproc) gd 
-    #mbstring  exif pcntl bcmath zip unzip curl pdo
+    
+
+RUN apt-get clean && rm -rf /var/lib/apt/lists/*
+
+    
 
 ENV COMPOSER_ALLOW_SUPERUSER=1
 
 COPY --from=composer:2.4 /usr/bin/composer /usr/bin/composer
 WORKDIR /var/www
+COPY ./docker/web/php/*.ini $PHP_INI_DIR/conf.d/
 COPY ./composer.* ./
 RUN chmod -R 777 storage bootstrap \
 ; rm -rf vendor && mkdir -p vendor && composer install --no-scripts --no-autoloader --no-progress --no-interaction \
@@ -54,30 +60,10 @@ RUN sed -i "s|exec \"\$@\"||g" `which docker-php-entrypoint` \
     exec \"\$@\";" >> `which docker-php-entrypoint` \
   ;
 
+FROM app as app_dev
 
+ENV XDEBUG_MODE=debug
 
-# #optional
-# RUN apt-get clean && rm -rf /var/lib/apt/list/*
-
-# # Install Composer
-# COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
-
-# # Create system user to run Composer and Artisan Commands
-# RUN useradd -u $uid -ms /bin/bash -g www-data $user
-
-# #Change permission
-# COPY --chown=user:www-data . /var/www
-
-# # RUN composer install --no-autoloader
-
-# USER  $user
-# EXPOSE 9000
-
-# CMD [ "php-fpm" ]
-
-
-
-
-
-
-
+RUN  set -eux; \
+    pecl install xdebug-3.4.0beta1; \
+    docker-php-ext-enable xdebug
