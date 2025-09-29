@@ -5,6 +5,7 @@ services:
   app:
     build: 
       dockerfile: ./docker/app/Dockerfile
+      target: app_dev
     depends_on:
       - db
     working_dir: /var/www
@@ -20,7 +21,7 @@ services:
       MYSQL_PASSWORD: laravel_password
       REDIS_HOST: redis_cache
       REDIS_PORT: 6379
-      XDEBUG_MODE: debug
+      XDEBUG_MODE: ${XDEBUG_MODE:-off}
       MAIL_HOST: mailhog
       MAIL_PORT: 1025
     # extra_hosts:
@@ -89,6 +90,8 @@ services:
   #redis service
   redis_cache:
     image: redis:latest
+    depends_on:
+      - app
     ports:
       - "6379:6379"
 
