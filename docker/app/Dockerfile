@@ -44,18 +44,18 @@ RUN chmod -R 777 storage bootstrap \
 ; composer dump-autoload --optimize --no-interaction --no-scripts \
 ;
 
-COPY ./app /var/www
+COPY ./ /var/www
 VOLUME /var/www/vendor
 
 RUN sed -i "s|exec \"\$@\"||g" `which docker-php-entrypoint` \
   ; echo "rm -rf .env*;\nprintenv | sed 's/=\\(.*\\)/=\"\\\1\"/' > .env.example;" >> `which docker-php-entrypoint` \
-  ; echo "chmod -R 777 storage;\n" >> `which docker-php-entrypoint` \
+  ; echo "chmod -R 777 storage bootstrap;\n" >> `which docker-php-entrypoint` \
   ; echo "if [ -z \"\$APP_KEY\" ]; then echo \"APP_KEY=\" >> .env.example;fi;\n" >> `which docker-php-entrypoint` \
   ; echo "composer run post-root-package-install;\n \
     composer run post-create-project-cmd;\n \
     composer run post-autoload-dump;\n \
     . \$PWD/.env;\n \
-    if [ \"\$APP_KEY\" = \"\" ]; then php artisan key:generate --ansi; fi;\n \
+    if [ \"\$APP_KEY\" = \"\" ]; then php artisan key:generate --ansi; php artisan migrate; fi;\n \
     php artisan config:cache;\n \
     exec \"\$@\";" >> `which docker-php-entrypoint` \
   ;
@@ -63,6 +63,7 @@ RUN sed -i "s|exec \"\$@\"||g" `which docker-php-entrypoint` \
 FROM app as app_dev
 
 ENV XDEBUG_MODE=debug
+ENV APP_DEBUG=true
 
 RUN  set -eux; \
     pecl install xdebug-3.4.0beta1; \
