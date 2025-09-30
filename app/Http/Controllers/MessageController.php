@@ -2,30 +2,40 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Http\Requests\SubmitMessageRequest;
 use App\Models\Message;
+use Illuminate\View\View;
+use Illuminate\Http\RedirectResponse;
 
 class MessageController extends Controller
 {
-    public function showForm()
+    /**
+     * Show the message submission form.
+     * @return View
+     */
+    public function showForm(): View
     {
         return view('message_us');
     }
 
-    public function submitForm(Request $request)
+    /**
+     * Handle the form submission.
+     * @param SubmitMessageRequest $request
+     * @return RedirectResponse
+     */
+    public function submitForm(SubmitMessageRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|max:255',
-            'message' => 'required|string|min:10|max:1000',
-        ]);
-
+        $validated = $request->validated();
         Message::create($validated);
 
         return redirect('/messages');
     }
 
-    public function listMessages()
+    /**
+     * Display a list of all submitted messages.
+     * @return View
+     */
+    public function listMessages(): View
     {
         $messages = Message::all();
 
