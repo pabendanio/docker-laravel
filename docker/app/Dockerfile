@@ -1,3 +1,6 @@
+# Replace with your preferred PHP-FPM base image
+#FROM  cpabendanio/php-fpm8.3:1.0 as app
+
 FROM php:8.3-fpm as app
 
 # Install system dependencies
@@ -27,10 +30,7 @@ RUN  set -eux; \
     docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install pdo_mysql -j$(nproc) gd 
     
-
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
-
-    
 
 ENV COMPOSER_ALLOW_SUPERUSER=1
 
