@@ -39,10 +39,9 @@ class MessageController extends Controller
      */
     public function listMessages(): View
     {
-        $messages = Message::all()
-            ->whereNull('deleted_at')
-            ->sortByDesc('created_at')
-            ;
+        $messages = Message::->whereNull('deleted_at')
+            ->orderByDesc('created_at')
+            ->get();
 
         return FacesView::make('messageList', ['messages' => $messages]);
     }
