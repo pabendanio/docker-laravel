@@ -13,7 +13,7 @@ services:
       - ./:/var/www:rw
     environment:
       APP_NAME: Laravel
-      APP_ENV: local
+      APP_ENV: production
       APP_DEBUG: ${APP_DEBUG:-false}
       DB_HOST: db
       DB_PORT: 3306
@@ -60,6 +60,9 @@ services:
   #redis service
   redis_cache:
     image: redis:latest
+    container_name: redis_cache
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
     depends_on:
       - app
     ports:
