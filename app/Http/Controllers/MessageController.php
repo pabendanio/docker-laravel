@@ -6,6 +6,7 @@ use App\Http\Requests\SubmitMessageRequest;
 use App\Models\Message;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\View as FacesView;
 
 class MessageController extends Controller
 {
@@ -15,7 +16,7 @@ class MessageController extends Controller
      */
     public function showForm(): View
     {
-        return view('message_us');
+        return FacesView::make('index');
     }
 
     /**
@@ -28,7 +29,8 @@ class MessageController extends Controller
         $validated = $request->validated();
         Message::create($validated);
 
-        return redirect('/messages');
+        return redirect()->route('messages')
+            ->with('success', 'Your message has been sent successfully!');
     }
 
     /**
@@ -37,8 +39,11 @@ class MessageController extends Controller
      */
     public function listMessages(): View
     {
-        $messages = Message::all();
+        $messages = Message::all()
+            ->whereNull('deleted_at')
+            ->sortByDesc('created_at')
+            ;
 
-        return view('messages', ['messages' => $messages]);
+        return FacesView::make('messageList', ['messages' => $messages]);
     }
 }

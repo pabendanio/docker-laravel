@@ -22,7 +22,15 @@ services:
       DB_PASSWORD: laravel_password
       DB_CONNECTION: mysql
       REDIS_HOST: redis_cache
+      REDIS_PASSWORD: null
       REDIS_PORT: 6379
+      CACHE_DRIVER: redis
+      SESSION_DRIVER: redis
+      QUEUE_CONNECTION: redis
+      REDIS_CACHE_DB: 0
+      REDIS_CLIENT: predis
+
+      
       XDEBUG_MODE: ${XDEBUG_MODE:-off}
       MAIL_HOST: mailhog
       MAIL_PORT: 1025
@@ -72,10 +80,6 @@ services:
       PMA_PASSWORD: ${DB_PASSWORD}
     depends_on:
       - db
-    volumes:
-      - dbdata:/var/lib/mysql:rw
-    # extra_hosts:
-    #   - host.docker.internal:host-gateway
 
   #mailhog service
   mailhog:
@@ -93,6 +97,9 @@ services:
   #redis service
   redis_cache:
     image: redis:latest
+    container_name: redis_cache
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
     depends_on:
       - app
     ports:
